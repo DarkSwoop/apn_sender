@@ -22,6 +22,17 @@ namespace :apn do
 
     puts "*** Starting worker to send apple notifications in the background from #{worker}"
 
+    if ENV['BACKGROUND']
+      unless Process.respond_to?('daemon')
+          abort "env var BACKGROUND is set, which requires ruby >= 1.9"
+      end
+      Process.daemon(true, true)
+    end
+
+    if ENV['PIDFILE']
+      File.open(ENV['PIDFILE'], 'w') { |f| f << worker.pid }
+    end
+
     worker.work(ENV['INTERVAL'] || 5) # interval, will block
   end
 
